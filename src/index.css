@@ -1121,7 +1121,7 @@ footer {
   align-items: flex-start;
   gap: 36px;
   box-sizing: border-box;
-  width: min(800px, calc(100% - 80px));
+  width: min(1120px, calc(100% - 80px));
   margin: 8px auto 88px;
   padding: 40px;
   background: #fff;
@@ -1139,6 +1139,29 @@ footer {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.art-piece {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.study-window.art-lightbox {
+  width: fit-content;
+  max-width: min(1040px, 100%);
+}
+
+.art-lightbox-image {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 120px);
+  height: auto;
+  margin: 0 auto;
 }
 
 @media (max-width: 980px) {
@@ -1176,6 +1199,7 @@ footer {
   }
 
   .art-wall {
+    flex-direction: column;
     gap: 18px;
     width: calc(100% - 28px);
     margin-top: 48px;

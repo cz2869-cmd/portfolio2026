@@ -183,6 +183,12 @@ const artColumns: { size: number; pieces: Artwork[] }[] = [
         width: 1024,
         height: 1024,
       },
+      {
+        src: "artwork/the-sea.jpg",
+        alt: "A hand reaching through blue water beneath the words The Sea will not beg for forgiveness",
+        width: 1024,
+        height: 1024,
+      },
     ],
   },
   {
@@ -200,12 +206,107 @@ const artColumns: { size: number; pieces: Artwork[] }[] = [
         width: 1024,
         height: 1024,
       },
+      {
+        src: "artwork/schedule.jpg",
+        alt: "Underwater cave with a hanging schedule sign, crystals, and coral",
+        width: 1024,
+        height: 715,
+      },
+    ],
+  },
+  {
+    size: 1,
+    pieces: [
+      {
+        src: "artwork/uniform.png",
+        alt: "Character in a white and gold uniform holding a blue handkerchief",
+        width: 1024,
+        height: 1024,
+      },
+      {
+        src: "artwork/trixie.jpg",
+        alt: "Character sheet of Trixie, a blue-haired figure in star-patterned clothes",
+        width: 1024,
+        height: 1024,
+      },
+      {
+        src: "artwork/city.jpg",
+        alt: "Blonde character with green eyes walking through a pink city street",
+        width: 1024,
+        height: 1024,
+      },
     ],
   },
 ];
 
+function ArtworkView({
+  piece,
+  home,
+  onClose,
+}: {
+  piece: Artwork;
+  home: string;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialog?.querySelector<HTMLElement>(".study-close")?.focus();
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="study-overlay" onClick={onClose}>
+      <div
+        ref={dialogRef}
+        className="study-window art-lightbox"
+        role="dialog"
+        aria-modal="true"
+        aria-label={piece.alt}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="study-bar">
+          <div className="window-controls" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <button type="button" className="study-close" onClick={onClose}>
+            Close
+          </button>
+        </div>
+        <img
+          className="art-lightbox-image"
+          src={`${home}${piece.src}`}
+          width={piece.width}
+          height={piece.height}
+          alt={piece.alt}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ArtPortfolio() {
   const home = import.meta.env.BASE_URL;
+  const artReturnRef = useRef<HTMLElement | null>(null);
+  const [openPiece, setOpenPiece] = useState<Artwork | null>(null);
+  const closePiece = useCallback(() => {
+    setOpenPiece(null);
+    artReturnRef.current?.focus();
+  }, []);
 
   return (
     <main className="art-page">
@@ -233,17 +334,29 @@ function ArtPortfolio() {
             style={{ flexGrow: column.size }}
           >
             {column.pieces.map((piece) => (
-              <img
+              <button
                 key={piece.src}
-                src={`${home}${piece.src}`}
-                width={piece.width}
-                height={piece.height}
-                alt={piece.alt}
-              />
+                type="button"
+                className="art-piece"
+                aria-haspopup="dialog"
+                aria-label={`View a larger ${piece.alt}`}
+                onClick={(event) => {
+                  artReturnRef.current = event.currentTarget;
+                  setOpenPiece(piece);
+                }}
+              >
+                <img
+                  src={`${home}${piece.src}`}
+                  width={piece.width}
+                  height={piece.height}
+                  alt=""
+                />
+              </button>
             ))}
           </div>
         ))}
       </div>
+      {openPiece ? <ArtworkView piece={openPiece} home={home} onClose={closePiece} /> : null}
     </main>
   );
 }
