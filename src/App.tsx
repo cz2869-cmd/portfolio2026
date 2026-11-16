@@ -684,8 +684,9 @@ function Home() {
                 </a>
               </h3>
               <p>
-                A short description of the project, your role, and the idea behind the work can live
-                here.
+                Need a place to study or hold a coffee chat? Try out the many different cafe spots
+                around Morningside Heights, New York City! Sign up to log which cafes you visit most
+                often, and grow your cafe garden.
               </p>
             </div>
             <div className="project-price">
@@ -716,8 +717,8 @@ function Home() {
                 </button>
               </h3>
               <p>
-                Use this space for a second project summary, including its purpose, approach, and
-                outcome.
+                Animatic is a free, interactive and guided animation learning tool for beginners.
+                You’ll learn how to create your first animation in 10 minutes!
               </p>
             </div>
             <div className="project-price">
