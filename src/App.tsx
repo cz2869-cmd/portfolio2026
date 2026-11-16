@@ -248,17 +248,16 @@ function ArtPortfolio() {
   );
 }
 
+const animaticDemo = "https://www.youtube.com/embed/YpXIgyfBVMw";
+
 function AnimaticStudy({ onClose }: { onClose: () => void }) {
   const dialogRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
-    const video = videoRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     dialog?.querySelector<HTMLElement>(".study-close")?.focus();
-    void video?.play().catch(() => {});
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -266,7 +265,7 @@ function AnimaticStudy({ onClose }: { onClose: () => void }) {
         return;
       }
       if (event.key !== "Tab" || !dialog) return;
-      const focusable = [...dialog.querySelectorAll<HTMLElement>("button, video, a[href]")];
+      const focusable = [...dialog.querySelectorAll<HTMLElement>("button, iframe, a[href]")];
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       if (!first || !last) return;
@@ -283,7 +282,6 @@ function AnimaticStudy({ onClose }: { onClose: () => void }) {
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
-      video?.pause();
     };
   }, [onClose]);
 
@@ -308,14 +306,13 @@ function AnimaticStudy({ onClose }: { onClose: () => void }) {
             Close
           </button>
         </div>
-        <video
-          ref={videoRef}
+        <iframe
           className="study-video"
-          src={`${import.meta.env.BASE_URL}animatic-demo.mp4`}
-          poster={`${import.meta.env.BASE_URL}animatic-board.png`}
-          controls
-          playsInline
-          preload="none"
+          src={animaticDemo}
+          title="Animatic demo"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
         />
         <div className="study-body">
           <p className="study-kicker">Case study</p>

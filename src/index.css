@@ -508,8 +508,8 @@ html {
   width: 100%;
   flex: 0 0 auto;
   aspect-ratio: 1470 / 756;
+  border: 0;
   background: #071433;
-  object-fit: contain;
 }
 
 .study-body {
