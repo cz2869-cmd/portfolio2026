@@ -1,4 +1,4 @@
-import { useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 
 function ArrowDown() {
   return (
@@ -159,9 +159,314 @@ function HalftoneGrass({ style }: { style: React.CSSProperties }) {
   );
 }
 
-export default function App() {
+function isArtRoute() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const path = window.location.pathname.replace(/\/$/, "") || "/";
+  return path === `${base}/art`;
+}
+
+type Artwork = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+};
+
+// Append a piece to a column to add a drawing. `size` is that column's relative width.
+const artColumns: { size: number; pieces: Artwork[] }[] = [
+  {
+    size: 2,
+    pieces: [
+      {
+        src: "artwork/field.png",
+        alt: "Two characters sitting together in a green field",
+        width: 1024,
+        height: 1024,
+      },
+    ],
+  },
+  {
+    size: 1,
+    pieces: [
+      {
+        src: "artwork/railing.jpg",
+        alt: "Blue-haired character leaning on a wooden railing",
+        width: 1024,
+        height: 1024,
+      },
+      {
+        src: "artwork/portrait.jpg",
+        alt: "Character with pink and lime hair looking to the side",
+        width: 1024,
+        height: 1024,
+      },
+    ],
+  },
+];
+
+function ArtPortfolio() {
+  const home = import.meta.env.BASE_URL;
+
+  return (
+    <main className="art-page">
+      <HalftoneSky />
+      <header className="site-header">
+        <a className="wordmark" href={home} aria-label="Back to home">
+          CECE<span>.</span>
+        </a>
+        <nav aria-label="Primary navigation">
+          <a href={`${home}#about`}>ABOUT</a>
+          <a href={`${home}#work`}>PROJECTS</a>
+        </nav>
+        <a className="contact-link" href="mailto:ceciliajiazhuo@gmail.com">
+          CONTACT
+        </a>
+      </header>
+
+      <h1 className="art-title">Art portfolio.</h1>
+
+      <div className="art-wall">
+        {artColumns.map((column) => (
+          <div
+            className="art-column"
+            key={column.pieces.map((piece) => piece.src).join("|")}
+            style={{ flexGrow: column.size }}
+          >
+            {column.pieces.map((piece) => (
+              <img
+                key={piece.src}
+                src={`${home}${piece.src}`}
+                width={piece.width}
+                height={piece.height}
+                alt={piece.alt}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+function AnimaticStudy({ onClose }: { onClose: () => void }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useLayoutEffect(() => {
+    const dialog = dialogRef.current;
+    const video = videoRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialog?.querySelector<HTMLElement>(".study-close")?.focus();
+    void video?.play().catch(() => {});
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialog) return;
+      const focusable = [...dialog.querySelectorAll<HTMLElement>("button, video, a[href]")];
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+      video?.pause();
+    };
+  }, [onClose]);
+
+  return (
+    <div className="study-overlay" onClick={onClose}>
+      <div
+        ref={dialogRef}
+        className="study-window"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="animatic-study-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="study-bar">
+          <div className="window-controls" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <span className="window-address">Animatic</span>
+          <button type="button" className="study-close" onClick={onClose}>
+            Close
+          </button>
+        </div>
+        <video
+          ref={videoRef}
+          className="study-video"
+          src={`${import.meta.env.BASE_URL}animatic-demo.mp4`}
+          poster={`${import.meta.env.BASE_URL}animatic-board.png`}
+          controls
+          playsInline
+          preload="none"
+        />
+        <div className="study-body">
+          <p className="study-kicker">Case study</p>
+          <h2 id="animatic-study-title">Animatic</h2>
+          <dl className="study-facts">
+            <div>
+              <dt>My role</dt>
+              <dd>Lead UI/UX Designer</dd>
+            </div>
+            <div>
+              <dt>My team</dt>
+              <dd>2 designers, 2 engineers</dd>
+            </div>
+            <div>
+              <dt>Context</dt>
+              <dd>A UI project dedicated to a three credit course.</dd>
+            </div>
+            <div>
+              <dt>Timeline</dt>
+              <dd>Mar – May 2026</dd>
+            </div>
+            <div>
+              <dt>Primary user</dt>
+              <dd>Beginners who are interested in learning how to animate</dd>
+            </div>
+          </dl>
+
+          <section className="study-section">
+            <h3>Identifying the challenge</h3>
+            <p>
+              Many people interested in art, whether they are inspired by media or creative outlets,
+              find the learning curve to be challenging. Survey answers mentioned roadblocks like:
+              learning animation is a huge time commitment, and it feels like a person needs to be
+              creative in order to learn animation. There is also a lack of resources that utilize
+              user interaction. Because of this, many interested artists choose not to start
+              animating.
+            </p>
+          </section>
+
+          <section className="study-section">
+            <h3>Goal</h3>
+            <p>
+              Teach an interested beginner the principles and tools of animation in less than 10
+              minutes using interactive learning through our website.
+            </p>
+          </section>
+
+          <section className="study-section">
+            <h3>Process</h3>
+            <p>
+              Our team wanted to put an emphasis on user interaction: to learn by doing.
+              Integrating an animation tool and canvas into the actual website would be pivotal to
+              the user experience, and providing the user freedom to explore and use animation tools
+              makes learning more convenient. At the same time, guidance was also essential; I drew
+              and scripted a character named Pip on our interface to guide the user through each
+              important step in the animation process.
+            </p>
+            <p>
+              As we iterated, we added and discarded many ideas. One idea we added was to
+              specifically define what the user would be animating and help the user feel clarity
+              and feasibility. A simple, short animation of a ball bouncing up and down allows the
+              task to become achievable.
+            </p>
+          </section>
+
+          <section className="study-section">
+            <h3>Initial prototyping</h3>
+            <img
+              className="study-figure"
+              src={`${import.meta.env.BASE_URL}animatic-prototypes.png`}
+              width={1024}
+              height={585}
+              alt="Early wireframes of Pip guiding a beginner through drawing, playback, and a short quiz"
+            />
+          </section>
+
+          <section className="study-section">
+            <h3>Solution</h3>
+            <p>
+              The measure of success for the website is if the user successfully creates their own
+              animated GIF by the time they reach the last page. The website serves as a kickstarter
+              to learn animation in more depth and possibly pick up a new hobby; to do this, we want
+              the initial learning curve to feel less intimidating and make animation a more
+              approachable concept.
+            </p>
+          </section>
+
+          <section className="study-section">
+            <h3>Impact and learnings</h3>
+            <p>
+              While we haven’t published the website on a public domain just yet, we’ve done a few
+              user tests. The interviewed users were new to the subject and were not previously
+              interviewed before.
+            </p>
+            <p>Our observations include:</p>
+            <ul>
+              <li>Having an actual canvas present is helpful to users</li>
+              <li>
+                Users are prone to skipping or skimming Pip’s dialogue, which can lead to
+                misunderstanding the task or steps
+              </li>
+              <li>
+                Users successfully created an animation without help from the interviewer by the end
+                of the 10 minutes
+              </li>
+              <li>
+                Users report that the website does help with the initial learning curve. It
+                demystifies animation as something that isn’t extremely difficult to do.
+              </li>
+            </ul>
+          </section>
+
+          <section className="study-section">
+            <h3>If I did things differently</h3>
+            <p>
+              I’d tweak the user interface for the learning portion of the website. I’d use effects
+              or highlights to help the user better understand where and which tool they should use
+              at a specific step.
+            </p>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Home() {
   const cardRef = useRef<HTMLDivElement>(null);
+  const studyReturnRef = useRef<HTMLElement | null>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [studyOpen, setStudyOpen] = useState(false);
+  const closeStudy = useCallback(() => {
+    setStudyOpen(false);
+    studyReturnRef.current?.focus();
+  }, []);
+
+  function openStudy(event: MouseEvent<HTMLButtonElement>) {
+    studyReturnRef.current = event.currentTarget;
+    setStudyOpen(true);
+  }
+
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ block: "start", behavior: "auto" });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   function handleMove(event: MouseEvent<HTMLDivElement>) {
     const bounds = cardRef.current?.getBoundingClientRect();
@@ -181,10 +486,10 @@ export default function App() {
             CECE<span>.</span>
           </a>
           <nav aria-label="Primary navigation">
-            <a href="#work">ABOUT</a>
-            <a href="#about">PROJECTS</a>
+            <a href="#about">ABOUT</a>
+            <a href="#work">PROJECTS</a>
           </nav>
-          <a className="contact-link" href="mailto:hello@example.com">
+          <a className="contact-link" href="mailto:ceciliajiazhuo@gmail.com">
             CONTACT
           </a>
         </header>
@@ -205,13 +510,12 @@ export default function App() {
           />
           <div className="landscape-noise" />
           <div className="card-meta">
-            <span>Independent creative</span>
-            <span>Portfolio / 2025</span>
+            <span>Portfolio / 2026</span>
           </div>
           <div className="hero-title">
             <p>Hello, I&apos;m</p>
-            <h1>Your Name</h1>
-            <p className="title-subline">I turn ideas into memorable digital experiences.</p>
+            <h1>Cecilia</h1>
+            <p className="title-subline">design & engineering</p>
           </div>
           <span className="card-coordinate">
             36.7783° N<br />
@@ -238,19 +542,37 @@ export default function App() {
         <div className="project-menu">
           <article className="project-item project-item--menu">
             <div className="menu-index">01.</div>
-            <div className="project-window" aria-label="Blank desktop project thumbnail">
+            <a
+              className="project-window project-window--shot"
+              href="https://assignment1-one-black.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open Morningside Nook in a new tab"
+            >
               <div className="window-bar">
                 <div className="window-controls" aria-hidden="true">
                   <span />
                   <span />
                   <span />
                 </div>
-                <span className="window-address">project-01.local</span>
+                <span className="window-address">assignment1-one-black.vercel.app</span>
               </div>
-              <div className="window-empty-state" />
-            </div>
+              <img
+                className="window-shot"
+                src="/morningside-nook.png"
+                alt=""
+              />
+            </a>
             <div className="project-info">
-              <h3 className="project-title--animatic">Morningside Nook</h3>
+              <h3 className="project-title--animatic">
+                <a
+                  href="https://assignment1-one-black.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Morningside Nook
+                </a>
+              </h3>
               <p>
                 A short description of the project, your role, and the idea behind the work can live
                 here.
@@ -264,14 +586,25 @@ export default function App() {
 
           <article className="project-item project-item--menu">
             <div className="menu-index">02.</div>
-            <div
-              className="project-window project-window--plain"
-              aria-label="Blank desktop project thumbnail"
+            <button
+              type="button"
+              className="project-window project-window--plain project-window--button"
+              onClick={openStudy}
+              aria-haspopup="dialog"
+              aria-label="Open the Animatic case study"
             >
-              <div className="window-empty-state" />
-            </div>
+              <img
+                className="animatic-video"
+                src={`${import.meta.env.BASE_URL}animatic-board.png`}
+                alt=""
+              />
+            </button>
             <div className="project-info">
-              <h3 className="project-title--animatic">Animatic</h3>
+              <h3 className="project-title--animatic">
+                <button type="button" onClick={openStudy}>
+                  Animatic
+                </button>
+              </h3>
               <p>
                 Use this space for a second project summary, including its purpose, approach, and
                 outcome.
@@ -286,9 +619,8 @@ export default function App() {
 
       <section className="about-section white-frame" id="about">
         <div className="section-kicker">
-          <span>02</span>
-          <p>Staff profile</p>
-          <span>Identification</span>
+          <span>About me</span>
+          <p></p>
         </div>
 
         <div className="id-stage">
@@ -302,15 +634,19 @@ export default function App() {
               <span>Item</span>
             </div>
             <nav className="receipt-links" aria-label="Portfolio links">
-              <a href="#work">
+              <a href={`${import.meta.env.BASE_URL}art`}>
                 <span>01</span>
-                <strong>Portfolio</strong>
+                <strong>Art portfolio</strong>
               </a>
               <a href="https://github.com">
                 <span>02</span>
                 <strong>Github</strong>
               </a>
-              <a href="mailto:hello@example.com">
+              <a
+                href="https://www.linkedin.com/in/ceciliazhuo"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <span>03</span>
                 <strong>LINKEDIN</strong>
               </a>
@@ -377,10 +713,16 @@ export default function App() {
         </div>
 
         <footer>
-          <a href="mailto:hello@example.com">Contact / CECILIAJIAZHUO@GMAIL.com</a>
+          <a href="mailto:ceciliajiazhuo@gmail.com">Contact / CECILIAJIAZHUO@GMAIL.com</a>
           <a href="#home">cloud 9 ↑</a>
         </footer>
       </section>
+      {studyOpen ? <AnimaticStudy onClose={closeStudy} /> : null}
     </main>
   );
+}
+
+export default function App() {
+  if (isArtRoute()) return <ArtPortfolio />;
+  return <Home />;
 }
