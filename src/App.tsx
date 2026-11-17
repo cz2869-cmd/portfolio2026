@@ -749,7 +749,7 @@ function Home() {
                 <span>01</span>
                 <strong>Art portfolio</strong>
               </a>
-              <a href="https://github.com">
+              <a href="https://github.com/cz2869-cmd" target="_blank" rel="noopener noreferrer">
                 <span>02</span>
                 <strong>Github</strong>
               </a>
